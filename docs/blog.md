@@ -30,6 +30,23 @@ The cast, and why each one is here:
 - **kube-prometheus-stack + DCGM** — observability.
 - **Open WebUI** — a test UI.
 
+The whole architecture on one page:
+
+```mermaid
+flowchart TB
+    client["clients (Claude Code, Open WebUI)"] --> gw["Istio Gateway + cert-manager (TLS)<br/>IP allowlist"]
+    gw --> bifrost["Bifrost — AI gateway<br/>one OpenAI API · fallback to Claude"]
+    bifrost --> epp["llm-d router / EPP (GAIE)<br/>prefix-aware routing · LMCache/NIXL KV reuse"]
+    epp --> vllm["vLLM model server"]
+    vllm --> gpu["GPU nodes (Karpenter JIT)<br/>prefill=spot · decode=on-demand"]
+    keda["KEDA (queue depth)"] -. scales .-> vllm
+    vllm -. Pending pod .-> karp["Karpenter"] --> gpu
+    prom["kube-prometheus-stack + DCGM"] -. metrics .-> grafana["Grafana"]
+    vllm -. metrics .-> prom
+    gpu -. metrics .-> prom
+    prom -. queue metric .-> keda
+```
+
 ### The plan, before any of this
 
 Target: Claude Code–compatible coding on an open model (`glm-5.2-fp8`, roughly on par with `sonnet-5`). Back-of-envelope:
@@ -572,6 +589,15 @@ The pace matches reality: +1 pod / 5 min, because a cold vLLM pod takes ~5 min t
 ### The two autoscalers, chained
 
 KEDA and Karpenter don't know about each other, but they chain perfectly through the scheduler:
+
+```mermaid
+flowchart LR
+    q["EPP queue depth ↑"] --> keda["KEDA<br/>+1 replica"]
+    keda --> pend["Pending pod"]
+    pend --> karp["Karpenter<br/>new GPU node"]
+    karp --> run["pod runs · queue drains"]
+    run -->|load ↓| rev["KEDA -1 → node empty → Karpenter consolidates"]
+```
 
 - **KEDA** answers "do I need more replicas?"
 - **Karpenter** answers "is there a node for this pod?"

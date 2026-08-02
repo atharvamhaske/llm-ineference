@@ -4,10 +4,12 @@
 
 ## The layers
 
-```
-Bifrost (AI gateway)  → one OpenAI API for clients
-   └► llm-d router / EPP  → picks a worker, prefix-aware routing, KV reuse
-        └► vLLM model server  → actually runs the model on GPU(s)
+```mermaid
+flowchart TB
+    client["clients"] --> bifrost["Bifrost (AI gateway)<br/>one OpenAI API"]
+    bifrost --> epp["llm-d router / EPP<br/>picks a worker · prefix-aware routing · KV reuse"]
+    epp --> vllm["vLLM model server<br/>runs the model on GPU(s)"]
+    vllm --> gpu[("GPU(s)")]
 ```
 
 ### vLLM — the engine

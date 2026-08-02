@@ -16,36 +16,39 @@ The original post is a dense, single-page runbook. This repo turns it into:
 
 ## The stack in one picture
 
-```
-                       ┌────────────────────────────────────────────┐
-   client (Claude Code,│                  INGRESS                    │
-   Open WebUI, curl)   │   Istio Gateway  +  cert-manager (TLS)      │
-        │              │   IP allowlist (AWS prefix list)            │
-        ▼              └───────────────────┬────────────────────────┘
-   ┌─────────────┐                         │
-   │  Bifrost    │  AI gateway: one OpenAI-compatible API,           
-   │ (AI gateway)│  routing, fallback to hosted (Claude), cost logs  
-   └──────┬──────┘                         │
-          │  routes each model to its EPP/router service            
-          ▼                                                          
-   ┌──────────────────────────────────────────────────────────────┐
-   │  llm-d stack (per model)                                       │
-   │    router / EPP  ── prefix-aware routing, KV-cache reuse       │
-   │        │                                                       │
-   │        ▼                                                       │
-   │    vLLM model server (Qwen3.6-27B-FP8, GLM-5.2-FP8, ...)       │
-   └───────────────┬──────────────────────────────────────────────┘
-                   │ runs on GPU pods
-                   ▼
-   ┌──────────────────────────────────────────────────────────────┐
-   │  GPU nodes  ── Karpenter just-in-time                          │
-   │    prefill pool = spot   |   decode pool = on-demand           │
-   │    NVIDIA device plugin exposes nvidia.com/gpu                 │
-   └──────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    client["client<br/>(Claude Code, Open WebUI, curl)"]
 
-   Autoscaling:  KEDA (queue depth) ─► pending pod ─► Karpenter (new node)
-   Observability: kube-prometheus-stack + DCGM exporter + Grafana
+    subgraph ingress["INGRESS"]
+        gw["Istio Gateway + cert-manager (TLS)<br/>IP allowlist (AWS prefix list)"]
+    end
+
+    bifrost["Bifrost (AI gateway)<br/>one OpenAI API · routing · fallback to Claude · cost logs"]
+
+    subgraph llmd["llm-d stack (per model)"]
+        epp["router / EPP<br/>prefix-aware routing · KV-cache reuse"]
+        vllm["vLLM model server<br/>Qwen3.6-27B-FP8, GLM-5.2-FP8, ..."]
+        epp --> vllm
+    end
+
+    subgraph gpunodes["GPU nodes — Karpenter just-in-time"]
+        pools["prefill pool = spot | decode pool = on-demand<br/>NVIDIA device plugin exposes nvidia.com/gpu"]
+    end
+
+    obs["Observability<br/>kube-prometheus-stack + DCGM + Grafana"]
+
+    client --> gw --> bifrost --> epp
+    vllm -->|runs on GPU pods| pools
+    llmd -.metrics.-> obs
+    gpunodes -.metrics.-> obs
+
+    keda["KEDA<br/>scales on queue depth"] -.->|creates Pending pod| pools
+    obs -.queue metric.-> keda
+    pools -->|Pending pod triggers| karp["Karpenter<br/>provisions/consolidates nodes"]
 ```
+
+_Autoscaling: KEDA (queue depth) → Pending pod → Karpenter (new node), and the reverse when idle._
 
 ---
 

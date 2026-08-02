@@ -25,10 +25,12 @@ Swapping teaches you the Gateway API deeply, and shows that "the gateway" is a *
 
 ## Architecture with Envoy AI Gateway
 
-```
-client → Envoy Gateway (Gateway + AIGatewayRoute)
-             ├─ AIServiceBackend: self-hosted  → vLLM Service (/v1)
-             └─ AIServiceBackend: hosted (OpenAI/Anthropic)  ← fallback/overflow
+```mermaid
+flowchart LR
+    client["client"] --> egw["Envoy Gateway<br/>Gateway + AIGatewayRoute"]
+    egw --> self["AIServiceBackend: self-hosted"]
+    egw -.fallback / overflow.-> hosted["AIServiceBackend: hosted<br/>(OpenAI / Anthropic)"]
+    self --> vllm["vLLM Service /v1"]
 ```
 
 The vLLM/llm-d model servers from the blog stay exactly as they are — you only replace the front door.

@@ -39,12 +39,19 @@ Scale up cautiously (matches warmup), scale down even slower (avoid flapping whe
 
 KEDA and Karpenter **don't know about each other**. They chain through the scheduler:
 
+```mermaid
+flowchart LR
+    metric["queue depth ↑<br/>(Prometheus)"] --> keda["KEDA<br/>need +1 replica"]
+    keda --> pending["new pod is<br/>Pending"]
+    pending -->|no GPU node free| karp["Karpenter<br/>provision GPU node"]
+    karp --> sched["pod schedules<br/>model warms<br/>queue drains"]
+    sched -->|load ↓| down["KEDA removes replica"]
+    down --> empty["node goes empty"]
+    empty --> consolidate["Karpenter<br/>consolidates it away"]
+    consolidate -->|bill stops| stop((idle = $0))
 ```
-load ↑  →  KEDA: "need +1 replica"  →  new pod is Pending (no GPU node free)
-        →  Karpenter: "a pod is Pending → provision a GPU node"
-        →  pod schedules, model warms, queue drains
-load ↓  →  KEDA removes replica  →  node goes empty  →  Karpenter consolidates it away
-```
+
+- **KEDA** owns *"how many replicas?"* · **Karpenter** owns *"is there a node?"* · the **Pending pod** is the handoff.
 
 - **KEDA** answers *"do I need more replicas?"*
 - **Karpenter** answers *"is there a node for this pod?"*
