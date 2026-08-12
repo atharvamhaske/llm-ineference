@@ -1,8 +1,8 @@
 # Homelab production stack — single L4 starter (kind + k9s)
 
-Run the production inference stack on **one NVIDIA L4** first — llm-d, vLLM, Bifrost, KEDA, Prometheus. Stepping stone before [**multi-GPU + Karpenter + prefill/decode**](multi-gpu-karpenter-stack.md).
+> **Execute the stack:** follow the step-by-step runbook → [**`runbooks/single-l4-production-runbook.md`**](runbooks/single-l4-production-runbook.md)
 
-**Multi-node GPU + Karpenter + prefill/decode pools →** [`multi-gpu-karpenter-stack.md`](multi-gpu-karpenter-stack.md) (after GPU #2 or EKS).
+Overview and architecture for **one NVIDIA L4** — stepping stone before [**multi-GPU + Karpenter**](multi-gpu-karpenter-stack.md).
 
 ## Your path (starting single L4)
 
@@ -565,6 +565,7 @@ Full steps: [Lab 09 — Pi & Bifrost CLI](labs/lab-09-consume-pi-bifrost-cli.md)
 
 | Doc | Purpose |
 |-----|---------|
+| [**runbooks/single-l4-production-runbook.md**](runbooks/single-l4-production-runbook.md) | **Step-by-step runbook** |
 | [blog.md](blog.md) | Original AWS production runbook |
 | [architecture.md](architecture.md) | Diagrams + client wiring |
 | [Lab 07](labs/lab-07-jarvislabs-gpu.md) | Jarvis pricing + bare Docker vLLM |

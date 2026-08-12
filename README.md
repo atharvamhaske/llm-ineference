@@ -5,10 +5,11 @@ A hands-on breakdown of the blog [In-house LLM Inference on Kubernetes: A Produc
 The original post is a dense, single-page runbook. This repo turns it into:
 
 1. A clean, **readable** version of the article — [`docs/blog.md`](docs/blog.md)
-2. **Architecture diagrams** — full stack, request flow, Pi + Bifrost CLI consumption — [`docs/architecture.md`](docs/architecture.md)
-3. **Small concept modules** you can learn one at a time — [`docs/modules/`](docs/modules/)
-4. **Hands-on labs** you can actually run (locally, no AWS bill) — [`docs/labs/`](docs/labs/)
-5. **Alternative-stack deep dives** to learn by swapping pieces — [`docs/alternatives/`](docs/alternatives/)
+2. **Runbooks** — step-by-step production deploy — [`docs/runbooks/`](docs/runbooks/)
+3. **Architecture diagrams** — [`docs/architecture.md`](docs/architecture.md)
+4. **Small concept modules** — [`docs/modules/`](docs/modules/)
+5. **Hands-on labs** — [`docs/labs/`](docs/labs/)
+6. **Alternative-stack deep dives** — [`docs/alternatives/`](docs/alternatives/)
    - Replace Bifrost with **Envoy AI Gateway**
    - Explore the **Bifrost** UI/gateway itself
    - Add **HAMi** GPU sharing (fractional GPUs — the thing the blog says is impossible with the vanilla device plugin)
@@ -48,8 +49,9 @@ Work top to bottom. Each module is short; each lab is runnable.
 | # | Read | Then do |
 |---|------|---------|
 | 0 | [`docs/blog.md`](docs/blog.md) — the whole story, readable | — |
-| 0b | [`homelab-production-stack.md`](docs/homelab-production-stack.md) — single L4 + kind | [`manifests/homelab/`](../manifests/homelab/) |
-| 0c | [`multi-gpu-karpenter-stack.md`](docs/multi-gpu-karpenter-stack.md) — **prefill + decode + Karpenter** | [`manifests/multi-gpu/`](../manifests/multi-gpu/) |
+| 0b | [**`runbooks/single-l4-production-runbook.md`**](docs/runbooks/single-l4-production-runbook.md) ⭐ **start deploy** | [`manifests/homelab/`](../manifests/homelab/) |
+| 0c | [`homelab-production-stack.md`](docs/homelab-production-stack.md) — overview | — |
+| 0d | [`multi-gpu-karpenter-stack.md`](docs/multi-gpu-karpenter-stack.md) — prefill + decode + Karpenter | [`manifests/multi-gpu/`](../manifests/multi-gpu/) |
 | 1 | [`modules/01-gpus-in-k8s.md`](docs/modules/01-gpus-in-k8s.md) | [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md) |
 | 2 | [`modules/02-karpenter-gpu-nodes.md`](docs/modules/02-karpenter-gpu-nodes.md) | [`lab-07` Jarvis](docs/labs/lab-07-jarvislabs-gpu.md) · [`lab-08` Modal](docs/labs/lab-08-modal-serverless.md) · [`lab-01` vLLM](docs/labs/lab-01-vllm-single-gpu.md) |
 | 3 | [`modules/03-ingress-tls.md`](docs/modules/03-ingress-tls.md) | — |
@@ -69,7 +71,7 @@ Work top to bottom. Each module is short; each lab is runnable.
 You do **not** need to burn money on an H200 to learn this. Four tracks:
 
 - **Track A — Local (free).** `kind` or `minikube` on your MacBook. Learn Kubernetes, Gateway API, KEDA, Bifrost, Envoy AI Gateway, and (if you have any NVIDIA GPU) HAMi + a small vLLM model. This is where you should start. See [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md).
-- **Track E — Homelab single L4 (starter).** kind + k9s + one GPU on Jarvis — learn the stack. [`homelab-production-stack.md`](docs/homelab-production-stack.md)
+- **Track E — Single L4 production.** Follow **[`docs/runbooks/single-l4-production-runbook.md`](docs/runbooks/single-l4-production-runbook.md)** — kind + k9s + vLLM + Bifrost + KEDA on Jarvis L4.
 - **Track F — Multi-GPU + Karpenter (production target).** Prefill (spot) + decode (on-demand), KEDA chain, llm-d disaggregation. [`multi-gpu-karpenter-stack.md`](docs/multi-gpu-karpenter-stack.md) + [`manifests/multi-gpu/`](../manifests/multi-gpu/)
 - **Track C — Jarvis Labs GPU (lowest ₹/hr warm).** Real vLLM on **L4 ~₹36/hr** (India IN2). SSH + Docker + memory tuning. See [`labs/lab-07-jarvislabs-gpu.md`](docs/labs/lab-07-jarvislabs-gpu.md).
 - **Track D — Modal serverless (scale-to-zero).** vLLM on **L4 ~$0.80/hr (~₹66/hr)** but billed per second; **$30/mo free credit**. Best for bursty sessions. Skips K8s. See [`labs/lab-08-modal-serverless.md`](docs/labs/lab-08-modal-serverless.md).

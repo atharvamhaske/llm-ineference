@@ -94,9 +94,9 @@ flowchart TB
 
 **Karpenter requires EKS (AWS EC2).** Jarvis multi-VM uses the same taints/pools manually until you move to EKS.
 
-## 2c. Single L4 homelab (Track E — starter)
+## 2c. Single L4 homelab (Track E — start here)
 
-[`homelab-production-stack.md`](homelab-production-stack.md) — kind + k9s, one GPU, decode only.
+**Runbook:** [`runbooks/single-l4-production-runbook.md`](runbooks/single-l4-production-runbook.md) — kind + k9s, one GPU, decode only.
 
 ---
 
