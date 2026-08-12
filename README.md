@@ -48,7 +48,8 @@ Work top to bottom. Each module is short; each lab is runnable.
 | # | Read | Then do |
 |---|------|---------|
 | 0 | [`docs/blog.md`](docs/blog.md) — the whole story, readable | — |
-| 0b | [`docs/homelab-production-stack.md`](docs/homelab-production-stack.md) — **your target: full stack on L4** | [`manifests/homelab/`](../manifests/homelab/) |
+| 0b | [`homelab-production-stack.md`](docs/homelab-production-stack.md) — single L4 + kind | [`manifests/homelab/`](../manifests/homelab/) |
+| 0c | [`multi-gpu-karpenter-stack.md`](docs/multi-gpu-karpenter-stack.md) — **prefill + decode + Karpenter** | [`manifests/multi-gpu/`](../manifests/multi-gpu/) |
 | 1 | [`modules/01-gpus-in-k8s.md`](docs/modules/01-gpus-in-k8s.md) | [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md) |
 | 2 | [`modules/02-karpenter-gpu-nodes.md`](docs/modules/02-karpenter-gpu-nodes.md) | [`lab-07` Jarvis](docs/labs/lab-07-jarvislabs-gpu.md) · [`lab-08` Modal](docs/labs/lab-08-modal-serverless.md) · [`lab-01` vLLM](docs/labs/lab-01-vllm-single-gpu.md) |
 | 3 | [`modules/03-ingress-tls.md`](docs/modules/03-ingress-tls.md) | — |
@@ -68,7 +69,8 @@ Work top to bottom. Each module is short; each lab is runnable.
 You do **not** need to burn money on an H200 to learn this. Four tracks:
 
 - **Track A — Local (free).** `kind` or `minikube` on your MacBook. Learn Kubernetes, Gateway API, KEDA, Bifrost, Envoy AI Gateway, and (if you have any NVIDIA GPU) HAMi + a small vLLM model. This is where you should start. See [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md).
-- **Track E — Homelab production (recommended goal).** **Same stack as the blog** (kind, llm-d, Bifrost, KEDA, Prometheus, DCGM, **k9s** UI) on **Jarvis L4 + Qwen2.5-Coder-14B-AWQ** — no AWS. See [`docs/homelab-production-stack.md`](docs/homelab-production-stack.md).
+- **Track E — Homelab single L4 (starter).** kind + k9s + one GPU on Jarvis — learn the stack. [`homelab-production-stack.md`](docs/homelab-production-stack.md)
+- **Track F — Multi-GPU + Karpenter (production target).** Prefill (spot) + decode (on-demand), KEDA chain, llm-d disaggregation. [`multi-gpu-karpenter-stack.md`](docs/multi-gpu-karpenter-stack.md) + [`manifests/multi-gpu/`](../manifests/multi-gpu/)
 - **Track C — Jarvis Labs GPU (lowest ₹/hr warm).** Real vLLM on **L4 ~₹36/hr** (India IN2). SSH + Docker + memory tuning. See [`labs/lab-07-jarvislabs-gpu.md`](docs/labs/lab-07-jarvislabs-gpu.md).
 - **Track D — Modal serverless (scale-to-zero).** vLLM on **L4 ~$0.80/hr (~₹66/hr)** but billed per second; **$30/mo free credit**. Best for bursty sessions. Skips K8s. See [`labs/lab-08-modal-serverless.md`](docs/labs/lab-08-modal-serverless.md).
 - **Track B — AWS (reference).** Original blog on EKS + Karpenter. After Track E works on homelab.

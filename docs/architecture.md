@@ -67,35 +67,36 @@ flowchart TB
 
 ---
 
-## 2b. Homelab production (Track E — your target)
+## 2b. Multi-GPU + Karpenter (Track F — production target)
 
-**Same stack as the blog**, **kind** on Jarvis L4 (GPU worker), **k9s** on Mac for cluster UI. Full runbook: [`homelab-production-stack.md`](homelab-production-stack.md).
+Prefill (spot) + decode (on-demand), KEDA → Pending → Karpenter, llm-d EPP. Full doc: [`multi-gpu-karpenter-stack.md`](multi-gpu-karpenter-stack.md).
 
 ```mermaid
 flowchart TB
-    k9s["k9s on Mac<br/>(cluster UI only)"]
-    pi["Pi / Bifrost CLI"]
-    ing["ingress-nginx"]
-    bifrost["Bifrost + fallback"]
+    k9s["k9s"]
+    bifrost["Bifrost"]
     epp["llm-d EPP"]
-    vllm["vLLM<br/>Qwen2.5-Coder-14B-AWQ"]
-    keda["KEDA max=1"]
-    prom["Prometheus + DCGM"]
-    kind["kind on Jarvis L4<br/>control-plane + GPU worker"]
+    prefill["vLLM prefill · spot pool"]
+    decode["vLLM decode · on-demand pool"]
+    keda["KEDA"]
+    karp["Karpenter"]
+    prefill_nodes["prefill L4 nodes"]
+    decode_nodes["decode L4 nodes"]
 
-    k9s -.->|kubectl| kind
-    pi --> ing --> bifrost --> epp --> vllm --> kind
-    epp -.-> prom -.-> keda -.-> vllm
+    k9s -.-> decode_nodes
+    bifrost --> epp
+    epp --> prefill --> prefill_nodes
+    epp --> decode --> decode_nodes
+    epp -.-> keda -.-> karp
+    karp --> prefill_nodes
+    karp --> decode_nodes
 ```
 
-| Blog (AWS) | Homelab replacement |
-|------------|---------------------|
-| EKS | **kind** on Jarvis L4 VM |
-| Karpenter | pause VM |
-| Istio + AWS LB | ingress-nginx |
-| kubectl UI | **k9s** (optional) |
-| Qwen3.6-27B-FP8 | Qwen2.5-Coder-14B-AWQ |
-| max-num-seqs 32 | max-num-seqs 4 |
+**Karpenter requires EKS (AWS EC2).** Jarvis multi-VM uses the same taints/pools manually until you move to EKS.
+
+## 2c. Single L4 homelab (Track E — starter)
+
+[`homelab-production-stack.md`](homelab-production-stack.md) — kind + k9s, one GPU, decode only.
 
 ---
 

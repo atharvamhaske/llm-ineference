@@ -1,8 +1,8 @@
-# Homelab production stack — same architecture, L4, self-managed K8s
+# Homelab production stack — single L4 starter (kind + k9s)
 
-Run the **same production inference stack** as the blog — llm-d, vLLM, Bifrost, KEDA, Prometheus, DCGM, ingress — on a **single NVIDIA L4 (24 GB)** with a **quantized coding model**. No AWS EKS. No Karpenter. You self-manage Kubernetes on a [Jarvis Labs](https://jarvislabs.ai) VM (or your own GPU box).
+Run the production inference stack on **one NVIDIA L4** first — llm-d, vLLM, Bifrost, KEDA, Prometheus. Stepping stone before [**multi-GPU + Karpenter + prefill/decode**](multi-gpu-karpenter-stack.md).
 
-**Your use case:** one coding agent (Pi harness / Bifrost CLI) doing normal dev work — read diffs, fill PR templates, open PRs — not 30 concurrent users at 128k context.
+**Multi-node GPU + Karpenter + prefill/decode pools →** [`multi-gpu-karpenter-stack.md`](multi-gpu-karpenter-stack.md) (your end target).
 
 ---
 
@@ -22,9 +22,8 @@ Run the **same production inference stack** as the blog — llm-d, vLLM, Bifrost
 | Taints + nodeSelector | ✅ same | GPU scheduling model unchanged |
 | **EKS** | **kind** on the L4 VM | same k8s API as production; see [Lab 00](labs/lab-00-local-cluster.md) |
 | **Cluster UI** | **k9s** | terminal UI — works with kind, EKS, anything (not a distro) |
-| **Karpenter** | **fixed node** + pause VM | manual “consolidation” = Jarvis pause |
-| Prefill/decode split | **decode pool only** | one GPU, one role |
-| Spot vs on-demand | N/A | single on-demand L4 |
+| **Karpenter** | skip (single node) | see [multi-gpu doc](multi-gpu-karpenter-stack.md) |
+| Prefill/decode split | **decode only** | add prefill pool in [multi-gpu doc](multi-gpu-karpenter-stack.md) |
 | LMCache / NIXL / EFA | skip | multi-node AWS feature |
 | **Model** | `Qwen/Qwen2.5-Coder-14B-Instruct-AWQ` | not Qwen3.6-27B-FP8 |
 | `--max-num-seqs` | **4** | blog uses 32 |

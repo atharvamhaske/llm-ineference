@@ -1,0 +1,40 @@
+# KEDA ScaledObject — EPP queue depth, multi-GPU decode pool
+# Adjust deployment name to match your llm-d overlay.
+# NodePool decode limits must allow maxReplicaCount GPUs.
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: coder14b-decode-scaler
+  namespace: infra-coder
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: optimized-baseline-nvidia-gpu-vllm-coder14b-decode
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  pollingInterval: 30
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 600
+          policies:
+            - type: Pods
+              value: 1
+              periodSeconds: 300
+        scaleDown:
+          stabilizationWindowSeconds: 600
+          policies:
+            - type: Pods
+              value: 1
+              periodSeconds: 600
+  triggers:
+    - type: prometheus
+      metricType: Value
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+        metricName: epp_pool_queue_size
+        query: sum(llm_d_epp_average_queue_size{namespace="infra-coder"})
+        threshold: "5"
