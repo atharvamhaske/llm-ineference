@@ -131,6 +131,32 @@ kubectl taint node "$WORKER" llm-d.ai/role=decode:NoSchedule --overwrite
 
 ---
 
+## Step 3b — One-command deploy with Tilt (recommended)
+
+After Step 3, skip manual Steps 5–9 and run everything from the repo root:
+
+```bash
+# On Jarvis VM (install once)
+curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
+
+cd $REPO_ROOT
+tilt up
+# Optional ingress on :80:
+# tilt up -- --ingress=true
+```
+
+**What Tilt does:**
+
+1. **`cluster-prep`** — removes control-plane `NoSchedule` taint so Prometheus/KEDA/Bifrost can schedule (fixes `FailedScheduling: untolerated taint control-plane` + `decode`).
+2. **Helm** — nvdp, Prometheus, DCGM, KEDA, Bifrost (values in `tilt/values/`).
+3. **Manifest** — `manifests/homelab/vllm-coder-14b.yaml` (vLLM + PodMonitor + ScaledObject).
+
+Port-forwards in the Tilt UI: vLLM `:8000`, Bifrost `:8080`, Grafana `:3000`.
+
+If a pod is still `Pending`, check it is not a chart default pod missing tolerations — re-run `tilt up` so `cluster-prep` completes first.
+
+---
+
 ## Step 4 — kubeconfig on Mac + k9s
 
 **On Jarvis:**

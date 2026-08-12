@@ -1,0 +1,5 @@
+# Homelab: no host-level node exporter (kind nodes are docker containers).
+prometheus-node-exporter:
+  enabled: false
+nodeExporter:
+  enabled: false

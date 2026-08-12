@@ -1,0 +1,5 @@
+# NVIDIA device plugin must tolerate the decode GPU taint to land on the worker.
+tolerations:
+  - key: llm-d.ai/role
+    operator: Exists
+    effect: NoSchedule

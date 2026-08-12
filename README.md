@@ -71,7 +71,7 @@ Work top to bottom. Each module is short; each lab is runnable.
 You do **not** need to burn money on an H200 to learn this. Four tracks:
 
 - **Track A — Local (free).** `kind` or `minikube` on your MacBook. Learn Kubernetes, Gateway API, KEDA, Bifrost, Envoy AI Gateway, and (if you have any NVIDIA GPU) HAMi + a small vLLM model. This is where you should start. See [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md).
-- **Track E — Single L4 production.** Follow **[`docs/runbooks/single-l4-production-runbook.md`](docs/runbooks/single-l4-production-runbook.md)** — kind + k9s + vLLM + Bifrost + KEDA on Jarvis L4.
+- **Track E — Single L4 production.** Follow **[`docs/runbooks/single-l4-production-runbook.md`](docs/runbooks/single-l4-production-runbook.md)** — kind + **`tilt up`** + k9s + vLLM + Bifrost + KEDA on Jarvis L4.
 - **Track F — Multi-GPU + Karpenter (production target).** Prefill (spot) + decode (on-demand), KEDA chain, llm-d disaggregation. [`multi-gpu-karpenter-stack.md`](docs/multi-gpu-karpenter-stack.md) + [`manifests/multi-gpu/`](../manifests/multi-gpu/)
 - **Track C — Jarvis Labs GPU (lowest ₹/hr warm).** Real vLLM on **L4 ~₹36/hr** (India IN2). SSH + Docker + memory tuning. See [`labs/lab-07-jarvislabs-gpu.md`](docs/labs/lab-07-jarvislabs-gpu.md).
 - **Track D — Modal serverless (scale-to-zero).** vLLM on **L4 ~$0.80/hr (~₹66/hr)** but billed per second; **$30/mo free credit**. Best for bursty sessions. Skips K8s. See [`labs/lab-08-modal-serverless.md`](docs/labs/lab-08-modal-serverless.md).

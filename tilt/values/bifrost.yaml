@@ -1,0 +1,4 @@
+bifrost:
+  encryptionKeySecret:
+    name: bifrost-encryption-key
+    key: encryption-key
