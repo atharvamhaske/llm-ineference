@@ -60,7 +60,7 @@ Work top to bottom. Each module is short; each lab is runnable.
 |---|------|---------|
 | 0 | [`docs/blog.md`](docs/blog.md) — the whole story, readable | — |
 | 1 | [`modules/01-gpus-in-k8s.md`](docs/modules/01-gpus-in-k8s.md) | [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md) |
-| 2 | [`modules/02-karpenter-gpu-nodes.md`](docs/modules/02-karpenter-gpu-nodes.md) | [`labs/lab-01-vllm-single-gpu.md`](docs/labs/lab-01-vllm-single-gpu.md) |
+| 2 | [`modules/02-karpenter-gpu-nodes.md`](docs/modules/02-karpenter-gpu-nodes.md) | [`lab-07` Jarvis](docs/labs/lab-07-jarvislabs-gpu.md) · [`lab-08` Modal](docs/labs/lab-08-modal-serverless.md) · [`lab-01` vLLM](docs/labs/lab-01-vllm-single-gpu.md) |
 | 3 | [`modules/03-ingress-tls.md`](docs/modules/03-ingress-tls.md) | — |
 | 4 | [`modules/04-observability.md`](docs/modules/04-observability.md) | (Prometheus/Grafana in lab-01) |
 | 5 | [`modules/05-serving-llm-d.md`](docs/modules/05-serving-llm-d.md) | [`labs/lab-01-vllm-single-gpu.md`](docs/labs/lab-01-vllm-single-gpu.md) |
@@ -72,12 +72,14 @@ Work top to bottom. Each module is short; each lab is runnable.
 
 ---
 
-## Two ways to run the labs
+## Three ways to run the labs
 
-You do **not** need to burn money on an H200 to learn this. Two tracks:
+You do **not** need to burn money on an H200 to learn this. Three tracks:
 
-- **Track A — Local (free).** `kind` or `minikube`. Learn Kubernetes, Gateway API, KEDA, Bifrost, Envoy AI Gateway, and (if you have any NVIDIA GPU) HAMi + a small vLLM model. This is where you should start. See [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md).
-- **Track B — AWS (real cost).** Reproduce the blog on EKS with Karpenter and real GPU instances. Only do this once Track A makes sense. Cost-control notes are in each module.
+- **Track A — Local (free).** `kind` or `minikube` on your MacBook. Learn Kubernetes, Gateway API, KEDA, Bifrost, Envoy AI Gateway, and (if you have any NVIDIA GPU) HAMi + a small vLLM model. This is where you should start. See [`labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md).
+- **Track C — Jarvis Labs GPU (lowest ₹/hr warm).** Real vLLM on **L4 ~₹36/hr** (India IN2). SSH + Docker + memory tuning. See [`labs/lab-07-jarvislabs-gpu.md`](docs/labs/lab-07-jarvislabs-gpu.md).
+- **Track D — Modal serverless (scale-to-zero).** vLLM on **L4 ~$0.80/hr (~₹66/hr)** but billed per second; **$30/mo free credit**. Best for bursty sessions. Skips K8s. See [`labs/lab-08-modal-serverless.md`](docs/labs/lab-08-modal-serverless.md).
+- **Track B — AWS (higher cost).** Reproduce the blog on EKS with Karpenter. Only after Tracks A + C/D make sense.
 
 > Model names in the blog (`glm-5.2`, `qwen-3.6`, `sonnet-5`) are the author's near-future naming. In the labs we substitute small, really-downloadable models (e.g. `Qwen/Qwen2.5-0.5B-Instruct`, `facebook/opt-125m`) so you can actually run them.
 
@@ -87,7 +89,7 @@ You do **not** need to burn money on an H200 to learn this. Two tracks:
 
 - `kubectl`, `helm` (v3.12+), `git`, `curl`
 - Docker (for `kind`) **or** `minikube`
-- For real GPU labs: an NVIDIA GPU + driver, or an AWS account with a GPU service quota
+- For real GPU labs: [Jarvis Labs](https://jarvislabs.ai) (L4 ~₹36/hr India) or [Modal](https://modal.com) (L4 scale-to-zero, $30/mo free credit), or AWS for Karpenter
 - Optional but recommended: a [Hugging Face](https://huggingface.co/settings/tokens) token for gated models
 
 See [`docs/labs/lab-00-local-cluster.md`](docs/labs/lab-00-local-cluster.md) to get a cluster up in ~5 minutes.

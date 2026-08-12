@@ -116,4 +116,4 @@ This *is* the benchmark grind from [Module 5](../modules/05-serving-llm-d.md), j
 
 vLLM exposes `/metrics` (Prometheus format). With kube-prometheus-stack installed, add a `ServiceMonitor` — **remember the `release: kube-prometheus-stack` label** ([Module 4](../modules/04-observability.md)) or you'll get no data. Those metrics feed KEDA in [Lab 05](lab-05-keda-autoscale.md).
 
-**Next:** [Lab 05 — Autoscale with KEDA](lab-05-keda-autoscale.md) · or jump to [Lab 04 — Bifrost](lab-04-bifrost.md) to put a gateway in front.
+**Next:** [Lab 07 — Jarvis Labs](lab-07-jarvislabs-gpu.md) (~₹36/hr) · [Lab 08 — Modal serverless](lab-08-modal-serverless.md) · [Lab 05 — KEDA](lab-05-keda-autoscale.md) · [Lab 04 — Bifrost](lab-04-bifrost.md)
