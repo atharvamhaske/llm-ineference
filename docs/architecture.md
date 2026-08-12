@@ -67,7 +67,39 @@ flowchart TB
 
 ---
 
-## 2. Learning stacks (Tracks A / C / D)
+## 2b. Homelab production (Track E — your target)
+
+**Same stack as the blog**, **kind** on Jarvis L4 (GPU worker), **k9s** on Mac for cluster UI. Full runbook: [`homelab-production-stack.md`](homelab-production-stack.md).
+
+```mermaid
+flowchart TB
+    k9s["k9s on Mac<br/>(cluster UI only)"]
+    pi["Pi / Bifrost CLI"]
+    ing["ingress-nginx"]
+    bifrost["Bifrost + fallback"]
+    epp["llm-d EPP"]
+    vllm["vLLM<br/>Qwen2.5-Coder-14B-AWQ"]
+    keda["KEDA max=1"]
+    prom["Prometheus + DCGM"]
+    kind["kind on Jarvis L4<br/>control-plane + GPU worker"]
+
+    k9s -.->|kubectl| kind
+    pi --> ing --> bifrost --> epp --> vllm --> kind
+    epp -.-> prom -.-> keda -.-> vllm
+```
+
+| Blog (AWS) | Homelab replacement |
+|------------|---------------------|
+| EKS | **kind** on Jarvis L4 VM |
+| Karpenter | pause VM |
+| Istio + AWS LB | ingress-nginx |
+| kubectl UI | **k9s** (optional) |
+| Qwen3.6-27B-FP8 | Qwen2.5-Coder-14B-AWQ |
+| max-num-seqs 32 | max-num-seqs 4 |
+
+---
+
+## 3. Learning stacks (Tracks A / C / D)
 
 Same **OpenAI API contract** at every layer; fewer moving parts while you learn.
 

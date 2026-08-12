@@ -1,0 +1,35 @@
+# kind cluster with NVIDIA GPU worker — run ON the Jarvis L4 VM (not Mac).
+# Requires: nvidia-container-toolkit on the host, Docker, kind.
+#
+#   kind create cluster --name inference --config manifests/homelab/kind-gpu.yaml
+#
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+containerdConfigPatches:
+  - |-
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
+      privileged_without_host_devices = false
+      runtime_engine = ""
+      runtime_root = ""
+      runtime_type = "io.containerd.rmi.v1"
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
+      BinaryName = "/usr/bin/nvidia-container-runtime"
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 80
+        protocol: TCP
+      - containerPort: 443
+        hostPort: 443
+        protocol: TCP
+  - role: worker
+    labels:
+      llm-d.ai/role: decode
+      nvidia.com/gpu.present: "true"

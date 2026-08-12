@@ -1,0 +1,92 @@
+# Bare vLLM on L4 — use while bringing up llm-d, or as minimal homelab serving.
+# Same model/flags as docs/homelab-production-stack.md
+# Apply: kubectl apply -f vllm-coder-14b.yaml
+---
+apiVersion: v1
+kind: Namespace
+metadata: {name: infra-coder}
+---
+apiVersion: v1
+kind: Secret
+metadata: {name: llm-d-hf-token, namespace: infra-coder}
+type: Opaque
+stringData:
+  HF_TOKEN: ""   # set if needed: kubectl create secret ... --from-literal=HF_TOKEN=hf_xxx --dry-run=client -o yaml | kubectl apply -f -
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-coder-14b
+  namespace: infra-coder
+  labels: {app: vllm-coder-14b}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: vllm-coder-14b}}
+  template:
+    metadata:
+      labels: {app: vllm-coder-14b}
+    spec:
+      tolerations:
+        - {key: llm-d.ai/role, operator: Exists, effect: NoSchedule}
+      nodeSelector:
+        llm-d.ai/role: decode
+      containers:
+        - name: vllm
+          image: vllm/vllm-openai:latest
+          args:
+            - "--model=Qwen/Qwen2.5-Coder-14B-Instruct-AWQ"
+            - "--quantization=awq_marlin"
+            - "--served-model-name=Qwen2.5-Coder-14B-AWQ"
+            - "--tensor-parallel-size=1"
+            - "--gpu-memory-utilization=0.90"
+            - "--max-model-len=32768"
+            - "--max-num-seqs=4"
+            - "--enable-auto-tool-choice"
+            - "--tool-call-parser=hermes"
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef: {name: llm-d-hf-token, key: HF_TOKEN, optional: true}
+          ports: [{name: http, containerPort: 8000}]
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+              memory: 32Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-coder
+  namespace: infra-coder
+  labels: {app: vllm-coder-14b}
+spec:
+  selector: {app: vllm-coder-14b}
+  ports: [{name: http, port: 80, targetPort: 8000}]
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: vllm-coder-14b
+  namespace: infra-coder
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector: {matchLabels: {app: vllm-coder-14b}}
+  podMetricsEndpoints:
+    - {port: http, path: /metrics, interval: 15s}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata: {name: vllm-coder-scaler, namespace: infra-coder}
+spec:
+  scaleTargetRef: {name: vllm-coder-14b}
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  pollingInterval: 30
+  triggers:
+    - type: prometheus
+      metricType: Value
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+        query: sum(vllm:num_requests_waiting{namespace="infra-coder"})
+        threshold: "3"
