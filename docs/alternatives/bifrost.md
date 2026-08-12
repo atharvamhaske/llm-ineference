@@ -46,6 +46,8 @@ auth     = x-bf-vk: sk-bf-<virtual-key>    (or Authorization: Bearer sk-bf-*)
 
 Do [Lab 04 — Bifrost](../labs/lab-04-bifrost.md): run the UI, register your Lab 01 vLLM, add a hosted fallback, watch the logs.
 
+Wire **Pi harness** and **Bifrost CLI**: [Lab 09](../labs/lab-09-consume-pi-bifrost-cli.md) · full diagrams in [architecture.md](../architecture.md).
+
 ## Further reading
 - Gateway setup: https://docs.getbifrost.ai/quickstart/gateway/setting-up
 - vLLM as a provider: https://docs.getbifrost.ai/quickstart/gateway/provider-configuration

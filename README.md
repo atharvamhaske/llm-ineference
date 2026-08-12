@@ -5,9 +5,10 @@ A hands-on breakdown of the blog [In-house LLM Inference on Kubernetes: A Produc
 The original post is a dense, single-page runbook. This repo turns it into:
 
 1. A clean, **readable** version of the article — [`docs/blog.md`](docs/blog.md)
-2. **Small concept modules** you can learn one at a time — [`docs/modules/`](docs/modules/)
-3. **Hands-on labs** you can actually run (locally, no AWS bill) — [`docs/labs/`](docs/labs/)
-4. **Alternative-stack deep dives** to learn by swapping pieces — [`docs/alternatives/`](docs/alternatives/)
+2. **Architecture diagrams** — full stack, request flow, Pi + Bifrost CLI consumption — [`docs/architecture.md`](docs/architecture.md)
+3. **Small concept modules** you can learn one at a time — [`docs/modules/`](docs/modules/)
+4. **Hands-on labs** you can actually run (locally, no AWS bill) — [`docs/labs/`](docs/labs/)
+5. **Alternative-stack deep dives** to learn by swapping pieces — [`docs/alternatives/`](docs/alternatives/)
    - Replace Bifrost with **Envoy AI Gateway**
    - Explore the **Bifrost** UI/gateway itself
    - Add **HAMi** GPU sharing (fractional GPUs — the thing the blog says is impossible with the vanilla device plugin)
@@ -16,39 +17,27 @@ The original post is a dense, single-page runbook. This repo turns it into:
 
 ## The stack in one picture
 
+Production (Track B), learning tracks (A/C/D), request flow, autoscaling, and **Pi / Bifrost CLI** wiring — all in [`docs/architecture.md`](docs/architecture.md).
+
 ```mermaid
 flowchart TB
-    client["client<br/>(Claude Code, Open WebUI, curl)"]
-
-    subgraph ingress["INGRESS"]
-        gw["Istio Gateway + cert-manager (TLS)<br/>IP allowlist (AWS prefix list)"]
+    subgraph clients["CLIENTS"]
+        pi["Pi harness"]
+        bfcli["Bifrost CLI"]
+        apps["Claude Code · Open WebUI · curl"]
     end
 
-    bifrost["Bifrost (AI gateway)<br/>one OpenAI API · routing · fallback to Claude · cost logs"]
+    gw["Istio Gateway (TLS)"]
+    bifrost["Bifrost · routing · fallback · cost logs"]
+    epp["llm-d EPP · prefix routing · KV reuse"]
+    vllm["vLLM · Qwen2.5-Coder-14B-AWQ"]
+    gpu["GPU nodes · Karpenter JIT"]
+    keda["KEDA · queue depth"]
 
-    subgraph llmd["llm-d stack (per model)"]
-        epp["router / EPP<br/>prefix-aware routing · KV-cache reuse"]
-        vllm["vLLM model server<br/>Qwen3.6-27B-FP8, GLM-5.2-FP8, ..."]
-        epp --> vllm
-    end
-
-    subgraph gpunodes["GPU nodes — Karpenter just-in-time"]
-        pools["prefill pool = spot | decode pool = on-demand<br/>NVIDIA device plugin exposes nvidia.com/gpu"]
-    end
-
-    obs["Observability<br/>kube-prometheus-stack + DCGM + Grafana"]
-
-    client --> gw --> bifrost --> epp
-    vllm -->|runs on GPU pods| pools
-    llmd -.metrics.-> obs
-    gpunodes -.metrics.-> obs
-
-    keda["KEDA<br/>scales on queue depth"] -.->|creates Pending pod| pools
-    obs -.queue metric.-> keda
-    pools -->|Pending pod triggers| karp["Karpenter<br/>provisions/consolidates nodes"]
+    clients --> gw --> bifrost --> epp --> vllm --> gpu
+    vllm -.-> keda
+    keda -.-> gpu
 ```
-
-_Autoscaling: KEDA (queue depth) → Pending pod → Karpenter (new node), and the reverse when idle._
 
 ---
 
@@ -69,6 +58,7 @@ Work top to bottom. Each module is short; each lab is runnable.
 | 8 | [`alternatives/hami-gpu-sharing.md`](docs/alternatives/hami-gpu-sharing.md) | [`labs/lab-02-hami-gpu-sharing.md`](docs/labs/lab-02-hami-gpu-sharing.md) |
 | 9 | [`alternatives/envoy-ai-gateway.md`](docs/alternatives/envoy-ai-gateway.md) | [`labs/lab-03-envoy-ai-gateway.md`](docs/labs/lab-03-envoy-ai-gateway.md) |
 | 10 | [`alternatives/bifrost.md`](docs/alternatives/bifrost.md) | [`labs/lab-04-bifrost.md`](docs/labs/lab-04-bifrost.md) |
+| 11 | [`docs/architecture.md`](docs/architecture.md) — full diagrams | [`labs/lab-09-consume-pi-bifrost-cli.md`](docs/labs/lab-09-consume-pi-bifrost-cli.md) |
 
 ---
 
