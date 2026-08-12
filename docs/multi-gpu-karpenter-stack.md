@@ -2,7 +2,35 @@
 
 Full blog architecture: **prefill pool (spot)** + **decode pool (on-demand)**, **Karpenter** JIT nodes, **KEDA** on queue depth, **llm-d**, **Bifrost**, observability — scaled for a **small team / solo power-user** on **L4-class GPUs** and **quantized coder models**.
 
-> **kind + k9s:** use on Mac to learn scheduling ([Lab 00](labs/lab-00-local-cluster.md)). **Karpenter does not run on kind** — it needs a cloud API (AWS EC2). Multi-GPU + Karpenter = **EKS** (below) or cloud-equivalent.
+> **kind + k9s:** use on Mac to learn scheduling ([Lab 00](labs/lab-00-local-cluster.md)). **Karpenter does not run on kind or Jarvis** — see [FAQ below](#can-i-run-karpenter-without-eks).
+
+---
+
+## Can I run Karpenter without EKS?
+
+**Short answer:** Karpenter needs a **cloud API to create VMs** — not necessarily EKS, but **yes AWS (or Azure/GKE)**. **No** on Jarvis / kind / a single static L4 box.
+
+| Cluster | Karpenter? | Why |
+|---------|------------|-----|
+| **kind** (Mac or Jarvis) | ❌ | No cloud API; nodes are Docker containers |
+| **Jarvis L4** (kind/kubeadm) | ❌ | Jarvis has no Karpenter provider |
+| **Self-managed k8s on AWS EC2** (kubeadm, not EKS) | ⚠️ possible | Still **AWS EC2** — same IAM/subnet tags; uncommon vs EKS |
+| **EKS** | ✅ | What the blog uses — supported path |
+| **Azure AKS / GKE** | ✅ | Different Karpenter provider |
+
+Karpenter watches **Pending pods** and calls **EC2 (or equivalent)** to launch instances. Without that API, nothing provisions nodes.
+
+**On a single Jarvis L4, you don't need Karpenter yet** — one node, one GPU, `maxReplicaCount: 1`. Use the same **taints, nodeSelector, KEDA, llm-d, Bifrost** so moving to EKS later is a swap of the node layer only.
+
+| Blog (Karpenter) | Single L4 on Jarvis |
+|------------------|---------------------|
+| Pending pod → new EC2 | Pod schedules on your only GPU node |
+| `consolidateAfter: 1m` | **Pause Jarvis VM** when done |
+| prefill + decode pools | **decode pool only** until GPU #2 |
+
+**When you add GPUs:** either (a) **EKS + Karpenter** for real JIT prefill/decode, or (b) **more Jarvis VMs** joined with kubeadm + manual start/pause (same taints, no auto-provision).
+
+**Start here:** [`homelab-production-stack.md`](homelab-production-stack.md) — single L4, full stack except Karpenter.
 
 ---
 

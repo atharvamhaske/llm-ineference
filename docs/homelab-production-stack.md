@@ -2,9 +2,17 @@
 
 Run the production inference stack on **one NVIDIA L4** first — llm-d, vLLM, Bifrost, KEDA, Prometheus. Stepping stone before [**multi-GPU + Karpenter + prefill/decode**](multi-gpu-karpenter-stack.md).
 
-**Multi-node GPU + Karpenter + prefill/decode pools →** [`multi-gpu-karpenter-stack.md`](multi-gpu-karpenter-stack.md) (your end target).
+**Multi-node GPU + Karpenter + prefill/decode pools →** [`multi-gpu-karpenter-stack.md`](multi-gpu-karpenter-stack.md) (after GPU #2 or EKS).
 
----
+## Your path (starting single L4)
+
+```text
+Now     →  This doc: 1× Jarvis L4, kind, k9s, decode-only, no Karpenter
+Later   →  2+ GPUs: kubeadm multi-VM (manual nodes) OR EKS + Karpenter
+End     →  multi-gpu doc: prefill (spot) + decode (on-demand)
+```
+
+Everything you install now (**llm-d, Bifrost, KEDA, Prometheus, taints, device plugin**) stays valid when Karpenter arrives — only node provisioning changes.
 
 ## What stays the same vs what changes
 
